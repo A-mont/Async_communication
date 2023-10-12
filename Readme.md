@@ -3,6 +3,16 @@
 
 ## Directorio IO
 
+### Agrega las siguientes dependencias.
+**comando:**
+```rust
+#![no_std]
+use gstd::{ prelude::*, ActorId };
+use gmeta::{In, InOut, Metadata};
+```
+
+
+
 ### PASO 1 Definir las acciones.
 **comando:**
 ```rust
@@ -83,21 +93,9 @@ pub enum FTEvent {
 }
 ```
 
-### PASO 6 Declarar una estructura para el inicio del programa, aquí agregamos el programa de token fungible
 
-**comando:**
-```rust
 
-#[derive(Decode, Encode, TypeInfo)]
-#[codec(crate = gstd::codec)]
-#[scale_info(crate = gstd::scale_info)]
-pub struct InitFT {
-   
-    pub ft_program_id: ActorId,
-}
-```
-
-### PASO 7 Definimos ContractMetadata y el estado
+### PASO 6 Definimos ContractMetadata y el estado
 
 **comando:**
 ```rust
@@ -118,6 +116,16 @@ impl Metadata for ContractMetadata{
 ```
 
 ## Directorio src
+
+### Agrega las siguientes dependencias.
+**comando:**
+```rust
+#![no_std]
+use gmeta::Metadata;
+use hashbrown::HashMap;
+use io::*;
+use gstd::{async_main, msg, exec, prelude::*, ActorId};
+```
 
 ### PASO 1 Definimos una estructura Actors para incorporar implementaciones
 
