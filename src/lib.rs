@@ -10,25 +10,35 @@ use gstd::{async_main, msg, exec, prelude::*, ActorId};
 #[cfg(feature = "binary-vendor")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-
+// Definimos una estructura de ejemplo para implementarle métodos.
 #[derive(Debug, Clone, Default)]
 struct Actors {  
     actors: HashMap<ActorId, u128>,
 }
 
-
+// Implementamos métodos en la estructura Actors
 impl Actors {
 
+    // Implementamos el metodo destructor de manera Asincrona, este método manda el mensaje mint a un contrato de token fungible
     async fn destructor( &mut self, amount_tokens: u128){
 
-       
+        // Definimos el estado actual usando la función que vuelve mutable el estado y esto  nos permitirá poder modificar el estado.
         let currentstate = state_mut();
-        let address_ft = addresft_state_mut(); 
-        let payload = FTAction::Burn(amount_tokens);     
-        // let _ = msg::send(address_ft.ft_program_id, payload, 0);
-        let result =  msg::send_for_reply_as::<_, FTEvent>(address_ft.ft_program_id,payload,0,0).expect("Error in sending a message").await;
-        currentstate.entry(msg::source()).or_insert(amount_tokens);  
 
+        // Esta variable permite obtener la dirección del token fungible.
+        let address_ft = addresft_state_mut();
+
+        // Definimos la carga que en este caso será un mensaje de Burn hacia el contrato de token fungible.
+        let payload = FTAction::Burn(amount_tokens);
+     
+        // Usamos la función send_for_reply_as para enviar el mensaje de Burn hacia el contrato de token fungible.
+        let result =  msg::send_for_reply_as::<_, FTEvent>(address_ft.ft_program_id,payload,0,0).expect("Error in sending a message").await;
+        
+        // Actualizamos el vector con el ActorId y la cantidad.
+        currentstate.entry(msg::source()).or_insert(amount_tokens); 
+
+
+        //Usamos este patrón para controlar el error
         let _ = match result {
             Ok(event) => match event {
                 FTEvent::Ok => Ok(()),
@@ -38,7 +48,7 @@ impl Actors {
         };
     }
 
-
+// Implementamos el metodo creator de manera Asincrona, este método lo definimos siguiendo el mismo patrón de diseño anterior.
     async fn creator(&mut self, amount_tokens: u128){
 
         let currentstate = state_mut();
@@ -56,6 +66,7 @@ impl Actors {
         };
     }
 
+// Implementamos el metodo transfer de manera Asincrona, este método lo definimos siguiendo el mismo patrón de diseño anterior.
     async fn transfer(&mut self, amount_tokens: u128) {
  
         let currentstate = state_mut();
@@ -76,6 +87,7 @@ impl Actors {
 }
 
 
+// Definimos las varibles.
 static mut ACTORS:Option<Actors> = None;
 
 static mut STATE:Option<HashMap<ActorId, u128>> = None;
@@ -83,7 +95,7 @@ static mut STATE:Option<HashMap<ActorId, u128>> = None;
 static mut ADDRESSFT:Option<InitFT> = None;
 
 
-
+// Definimos esta función para volver mutables las variables estática ACTORS
 fn actors_state_mut() -> &'static mut Actors  {
 
     unsafe { ACTORS.get_or_insert(Default::default()) }
@@ -93,7 +105,7 @@ fn actors_state_mut() -> &'static mut Actors  {
 
 
 
-
+// Definimos esta función para volver mutables las variables estática STATE
 fn state_mut() -> &'static mut HashMap<ActorId,u128> {
 
     let state = unsafe { STATE.as_mut()};
@@ -103,6 +115,7 @@ fn state_mut() -> &'static mut HashMap<ActorId,u128> {
 
 }
 
+// Definimos esta función para volver mutables las variables estática InitFT
 fn addresft_state_mut() -> &'static mut InitFT {
 
 
@@ -113,7 +126,7 @@ fn addresft_state_mut() -> &'static mut InitFT {
 
 }
 
-
+// Definimos esta función INIT para inicializar todas las variables
 #[no_mangle]
 extern "C" fn init () {
 
@@ -139,13 +152,18 @@ extern "C" fn init () {
 
 }
 
+// Definimos esta función manin de forma asincrona usando el macro #[async_main].
 #[async_main]
 async fn main(){
 
+    // Cargamos la acción del usuario
     let action: Action = msg::load().expect("Could not load Action");
 
+    // Definimos la varible actors para usar las implementaciones 
     let actors = unsafe { ACTORS.get_or_insert(Actors::default()) };
 
+
+     //Se ejecuta el método en funcion a la accion seleccionada por el usuario.
     match action {
         Action::FTCreate(amount) =>  {
          
@@ -173,7 +191,7 @@ async fn main(){
 }
 
     
-
+     //Este patrón de código de estado es solo para vectores
     #[no_mangle]
     extern "C" fn state() {
      
@@ -183,7 +201,7 @@ async fn main(){
         msg::reply(state, 0).expect("failed to encode or reply from `state()`");
     }
 
-
+//Estructura InitFT para inicializar el contrato inteligente.
 #[derive(Decode, Encode, TypeInfo)]
 #[codec(crate = gstd::codec)]
 #[scale_info(crate = gstd::scale_info)]

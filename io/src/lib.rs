@@ -9,6 +9,7 @@ pub type TransactionId = u64;
 
 
 
+// Definir los acciones a usar
 #[derive(Encode, Decode, TypeInfo, Hash, PartialEq, PartialOrd, Eq, Ord, Clone, Copy, Debug)]
 pub enum Action {
     FTCreate(u128),
@@ -17,6 +18,8 @@ pub enum Action {
 }
 
 
+
+// Declarar las funciones del token fungible
 #[derive(Debug, Decode, Encode, TypeInfo)]
 #[codec(crate = gstd::codec)]
 #[scale_info(crate = gstd::scale_info)]
@@ -36,6 +39,7 @@ pub enum FTAction {
     BalanceOf(ActorId),
 }
 
+// Declarar los eventos 
 #[derive(Debug, Encode, Decode, TypeInfo)]
 #[codec(crate = gstd::codec)]
 #[scale_info(crate = gstd::scale_info)]
@@ -46,6 +50,8 @@ pub enum Event {
 }
 
 
+
+// Declarar una estructura para el inicio del programa
 #[derive(Decode, Encode, TypeInfo)]
 #[codec(crate = gstd::codec)]
 #[scale_info(crate = gstd::scale_info)]
@@ -54,6 +60,8 @@ pub struct InitFT {
     pub ft_program_id: ActorId,
 }
 
+
+// Declaracion de errores si se necesitan
 #[derive(Debug, Clone, Encode, Decode, TypeInfo)]
 pub enum Error {
     ZeroAmount,
@@ -74,6 +82,7 @@ pub struct Transaction<T> {
 }
 
 
+// Declaracion de eventos del token fungible
 #[derive(Encode, Decode, TypeInfo)]
 pub enum FTEvent {
     Ok,
@@ -83,15 +92,19 @@ pub enum FTEvent {
 }
 
 
+// Declaracion de estructura para el estado
 pub struct ContractMetadata;
 
 
 impl Metadata for ContractMetadata{
+    // iniciamos con la estructura InitFT
     type Init = In<InitFT>;
+    // Definimos las acciones y eventos para la funcion Handle
      type Handle = InOut<Action,Event>;
      type Others = ();
      type Reply=();
      type Signal = ();
+     // Definimos el estado como un vector.
      type State = Vec<(ActorId, u128)>;
 
 }
